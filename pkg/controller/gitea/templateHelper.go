@@ -144,6 +144,10 @@ func (h *GiteaTemplateHelper) loadTemplate(name string) ([]byte, error) {
 	}
 
 	var buffer bytes.Buffer
-	parsed.Execute(&buffer, h.Parameters)
+	err = parsed.Execute(&buffer, h.Parameters)
+	if err != nil {
+		return nil, err
+	}
+
 	return buffer.Bytes(), nil
 }
