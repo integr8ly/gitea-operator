@@ -1,0 +1,9 @@
+apiVersion: integreatly.org/v1alpha1
+kind: Gitea
+metadata:
+  name: example-gitea
+spec:
+  hostname: "gitea.apps.pbraun-dcdc.openshiftworkshop.com"
+  giteaImage: "docker.io/wkulhanek/gitea"
+  giteaVersion: "latest"
+  deployProxy: True

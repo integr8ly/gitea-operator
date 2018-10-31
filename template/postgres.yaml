@@ -1,0 +1,65 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    description: Defines how to deploy the database
+  name: {{ .GiteaPgDeploymentName }}
+  namespace: {{ .ApplicationNamespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ .GiteaPgDeploymentName }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: {{ .GiteaPgDeploymentName }}
+      name: {{ .GiteaPgDeploymentName }}
+    spec:
+      serviceAccountName: {{ .GiteaServiceAccountName }}
+      containers:
+      - env:
+        - name: POSTGRESQL_USER
+          value: {{ .DatabaseUser }}
+        - name: POSTGRESQL_PASSWORD
+          value: {{ .DatabasePassword }}
+        - name: POSTGRESQL_DATABASE
+          value: {{ .DatabaseName }}
+        - name: POSTGRESQL_MAX_CONNECTIONS
+          value: "{{ .DatabaseMaxConnections }}"
+        - name: POSTGRESQL_SHARED_BUFFERS
+          value: {{ .DatabaseSharedBuffers }}
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          value: {{ .DatabaseAdminPassword }}
+        image: 'centos/postgresql-95-centos7'
+        livenessProbe:
+          initialDelaySeconds: 30
+          tcpSocket:
+            port: 5432
+          timeoutSeconds: 1
+        name: postgresql
+        ports:
+        - containerPort: 5432
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -i
+            - -c
+            - psql -h 127.0.0.1 -U {{ .DatabaseUser}} -q -d {{ .DatabaseName }} -c 'SELECT 1'
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        resources:
+          limits:
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /var/lib/pgsql/data
+          name: {{ .GiteaPgPvcName }}
+      volumes:
+      - name: {{ .GiteaPgPvcName }}
+        persistentVolumeClaim:
+          claimName: {{ .GiteaPgPvcName }}
+  triggers:
+  - type: ConfigChange

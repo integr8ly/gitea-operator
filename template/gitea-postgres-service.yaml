@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    description: Exposes the database server
+  name: {{ .GiteaPgServiceName }}
+  namespace: {{ .ApplicationNamespace }}
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: 5432
+  selector:
+    name: {{ .GiteaPgDeploymentName }}

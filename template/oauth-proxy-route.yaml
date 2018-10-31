@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .ProxyRouteName }}
+  namespace: {{ .ApplicationNamespace }}
+spec:
+  host: {{ .Hostname }}
+  to:
+    kind: Service
+    name: {{ .ProxyServiceName }}
+  tls:
+    termination: Edge

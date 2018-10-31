@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .GiteaIngressName }}
+  namespace: {{ .ApplicationNamespace }}
+  labels:
+    app: {{ .ApplicationName }}
+spec:
+  rules:
+  - host: {{ .Hostname }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .GiteaServiceName }}
+          servicePort: 3000
