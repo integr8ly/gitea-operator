@@ -1,5 +1,12 @@
 # Gitea Operator
 
+[![Build Status](https://travis-ci.org/integr8ly/gitea-operator.svg?branch=master)](https://travis-ci.org/integr8ly/gitea-operator)
+
+|                 | Project Info  |
+| --------------- | ------------- |
+| License:        | Apache License, Version 2.0                      |
+| IRC             | [#integreatly](https://webchat.freenode.net/?channels=integreatly) channel in the [freenode](http://freenode.net/) network. |
+
 An Operator that installs Gitea and, optionally on OpenShift, an oauth proxy. Installation is performed by creating a custom resource of kind `Gitea`. You can uninstall Gitea by removing this resource.
 The Operator will also watch all Gitea resources and reinstall them if they are deleted.
 
@@ -44,7 +51,7 @@ spec:
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
 ```
 
-An example can be found under `deploy/integreatly_v1alpha1_gitea_cr.yaml`
+An example can be found under `deploy/crds/integreatly_v1alpha1_gitea_cr.yaml`
 
 Start the installation with
 

@@ -12,5 +12,9 @@ build:
 push:
 	docker push ${REG}/${ORG}/${IMAGE}:${TAG}
 
+.PHONY: test
+test:
+	go test -race -v ./pkg/...
+
 all: build
 	@echo "${IMAGE} built successfully"
