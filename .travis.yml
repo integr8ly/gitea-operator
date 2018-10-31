@@ -5,4 +5,4 @@ go:
 - 1.10.x
 
 script:
-- cd $HOME/gopath/src/github.com/integr8ly/gitea-operator && make all test
+- cd $HOME/gopath/src/github.com/integr8ly/gitea-operator && make deps test
