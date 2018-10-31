@@ -12,8 +12,6 @@ type GiteaSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	Hostname string 	`json:"hostname"`
-	GiteaImage string 	`json:"giteaImage"`
-	GiteaVersion string	`json:"giteaVersion"`
 	DeployProxy	bool	`json:"deployProxy"`
 }
 

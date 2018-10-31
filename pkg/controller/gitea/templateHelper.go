@@ -12,6 +12,8 @@ import (
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 const (
+	GiteaImage = "docker.io/wkulhanek/gitea"
+	GiteaVersion = "1.6"
 	GiteaConfigMapName = "gitea-config"
 	GiteaDeploymentName = "gitea"
 	GiteaIngressName = "gitea-ingress"
@@ -110,8 +112,8 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		InstallLock: true,
 		GiteaInternalToken: generateToken(105),
 		GiteaSecretKey: generateToken(10),
-		GiteaImage: cr.Spec.GiteaImage,
-		GiteaVersion: cr.Spec.GiteaVersion,
+		GiteaImage: GiteaImage,
+		GiteaVersion: GiteaVersion,
 		GiteaVolumeCapacity: "1Gi",
 		DbVolumeCapacity: "1Gi",
 	}

@@ -13,8 +13,6 @@ var MockCR = integreatlyv1alpha1.Gitea{
 	},
 	Spec: integreatlyv1alpha1.GiteaSpec{
 		DeployProxy: true,
-		GiteaVersion: "mockversion",
-		GiteaImage: "mockimage",
 		Hostname: "gitea.example.com",
 	},
 }
