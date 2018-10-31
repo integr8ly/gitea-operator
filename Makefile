@@ -4,6 +4,18 @@ IMAGE=gitea-operator
 TAG=latest
 KUBE_CMD=oc apply -f
 
+.PHONY: deps
+deps:
+	@echo Installing golang dependencies
+	@go get golang.org/x/sys/unix
+	@go get golang.org/x/crypto/ssh/terminal
+	@echo Installing dep
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+	@echo Installing errcheck
+	@go get github.com/kisielk/errcheck
+	@echo setup complete run make build deploy to build and deploy the operator to a local cluster
+	dep ensure
+
 .PHONY: build
 build:
 	operator-sdk generate k8s
