@@ -45,7 +45,7 @@ kind: Gitea
 metadata:
   name: example-gitea
 spec:
-  hostname: <Subdomain + Hostname of the Gitea Dashboard>
+  hostname: <gitea.apps.CLUSTER_URL>
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
 ```
 
