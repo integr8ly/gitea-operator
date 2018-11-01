@@ -46,8 +46,6 @@ metadata:
   name: example-gitea
 spec:
   hostname: <Subdomain + Hostname of the Gitea Dashboard>
-  giteaImage: <Gitea image, usually docker.io/wkulhanek/gitea>
-  giteaVersion: <Gitea version, e.g. latest>
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
 ```
 
