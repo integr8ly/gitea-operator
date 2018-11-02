@@ -3,11 +3,12 @@ package gitea
 import (
 	"bytes"
 	"fmt"
-	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"text/template"
+
+	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 )
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -111,7 +112,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		DatabaseMaxConnections:  "100",
 		DatabaseSharedBuffers:   "12MB",
 		InstallLock:             true,
-		GiteaInternalToken:      generateToken(105),
+		GiteaInternalToken:      cr.Spec.GiteaInternalToken,
 		GiteaSecretKey:          generateToken(10),
 		GiteaImage:              GiteaImage,
 		GiteaVersion:            GiteaVersion,
