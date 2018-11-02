@@ -148,7 +148,10 @@ func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceN
 
 	// Set the CR as the owner of this resource so that when
 	// the CR is deleted this resource also gets removed
-	controllerutil.SetControllerReference(cr, resource.(v1.Object), r.scheme)
+	err = controllerutil.SetControllerReference(cr, resource.(v1.Object), r.scheme)
+	if err != nil {
+		log.Printf("Error setting the custom resource as owner: %s", err)
+	}
 
 	err = r.client.Create(context.TODO(), resource)
 	if err != nil {
