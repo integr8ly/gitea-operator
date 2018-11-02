@@ -7,16 +7,16 @@ import (
 	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Add creates a new Gitea Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -129,7 +129,7 @@ func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceN
 	// Try to find the resource, it may already exist
 	selector := types.NamespacedName{
 		Namespace: cr.Namespace,
-		Name: resourceName,
+		Name:      resourceName,
 	}
 	err = r.client.Get(context.TODO(), selector, resource)
 
@@ -151,7 +151,7 @@ func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceN
 	controllerutil.SetControllerReference(cr, resource.(v1.Object), r.scheme)
 
 	err = r.client.Create(context.TODO(), resource)
-	if err !=  nil {
+	if err != nil {
 		log.Printf("Error creating resource: %s", err)
 	}
 }

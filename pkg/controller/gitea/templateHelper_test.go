@@ -1,8 +1,8 @@
 package gitea
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 // Verifies that all templates are present and can be parsed

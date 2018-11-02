@@ -1,31 +1,32 @@
 package gitea
 
 import (
-	"math/rand"
-	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
-	"io/ioutil"
 	"bytes"
 	"fmt"
-	"text/template"
+	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
+	"io/ioutil"
+	"math/rand"
 	"os"
+	"text/template"
 )
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
 const (
-	GiteaImage = "docker.io/wkulhanek/gitea"
-	GiteaVersion = "1.6"
-	GiteaConfigMapName = "gitea-config"
-	GiteaDeploymentName = "gitea"
-	GiteaIngressName = "gitea-ingress"
-	GiteaPgDeploymentName = "postgres"
-	GiteaPgPvcName = "gitea-postgres-pvc"
-	GiteaPgServiceName = "gitea-postgres-service"
-	GiteaReposPvcName = "gitea-repos-pvc"
+	GiteaImage              = "docker.io/wkulhanek/gitea"
+	GiteaVersion            = "1.6"
+	GiteaConfigMapName      = "gitea-config"
+	GiteaDeploymentName     = "gitea"
+	GiteaIngressName        = "gitea-ingress"
+	GiteaPgDeploymentName   = "postgres"
+	GiteaPgPvcName          = "gitea-postgres-pvc"
+	GiteaPgServiceName      = "gitea-postgres-service"
+	GiteaReposPvcName       = "gitea-repos-pvc"
 	GiteaServiceAccountName = "gitea-service-account"
-	GiteaServiceName = "gitea-service"
-	ProxyDeploymentName = "oauth-proxy"
-	ProxyRouteName = "oauth-proxy-route"
-	ProxyServiceName = "oauth-proxy-service"
+	GiteaServiceName        = "gitea-service"
+	ProxyDeploymentName     = "oauth-proxy"
+	ProxyRouteName          = "oauth-proxy-route"
+	ProxyServiceName        = "oauth-proxy-service"
 	ProxyServiceAccountName = "oauth-proxy-service-account"
 )
 
@@ -42,43 +43,43 @@ var DatabaseAdminPassword = generateToken(10)
 
 type GiteaParameters struct {
 	// Resource names
-	GiteaConfigMapName string
-	GiteaDeploymentName string
-	GiteaIngressName string
-	GiteaPgDeploymentName string
-	GiteaPgPvcName string
-	GiteaPgServiceName string
-	GiteaReposPvcName string
+	GiteaConfigMapName      string
+	GiteaDeploymentName     string
+	GiteaIngressName        string
+	GiteaPgDeploymentName   string
+	GiteaPgPvcName          string
+	GiteaPgServiceName      string
+	GiteaReposPvcName       string
 	GiteaServiceAccountName string
-	GiteaServiceName string
+	GiteaServiceName        string
 
 	// OAuth Proxy names
-	ProxyDeploymentName string
-	ProxyRouteName string
-	ProxyServiceName string
+	ProxyDeploymentName     string
+	ProxyRouteName          string
+	ProxyServiceName        string
 	ProxyServiceAccountName string
 
 	// Resource properties
-	ApplicationNamespace string
-	ApplicationName string
-	Hostname string
-	DatabaseUser string
-	DatabasePassword string
-	DatabaseAdminPassword string
-	DatabaseName string
+	ApplicationNamespace   string
+	ApplicationName        string
+	Hostname               string
+	DatabaseUser           string
+	DatabasePassword       string
+	DatabaseAdminPassword  string
+	DatabaseName           string
 	DatabaseMaxConnections string
-	DatabaseSharedBuffers string
-	InstallLock bool
-	GiteaInternalToken string
-	GiteaSecretKey string
-	GiteaImage string
-	GiteaVersion string
-	GiteaVolumeCapacity string
-	DbVolumeCapacity string
+	DatabaseSharedBuffers  string
+	InstallLock            bool
+	GiteaInternalToken     string
+	GiteaSecretKey         string
+	GiteaImage             string
+	GiteaVersion           string
+	GiteaVolumeCapacity    string
+	DbVolumeCapacity       string
 }
 
 type GiteaTemplateHelper struct {
-	Parameters GiteaParameters
+	Parameters   GiteaParameters
 	TemplatePath string
 }
 
@@ -87,35 +88,35 @@ type GiteaTemplateHelper struct {
 // by the user in the custom resource
 func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	param := GiteaParameters{
-		GiteaConfigMapName: GiteaConfigMapName,
-		GiteaDeploymentName: GiteaDeploymentName,
-		GiteaIngressName: GiteaIngressName,
-		GiteaPgDeploymentName: GiteaPgDeploymentName,
-		GiteaPgPvcName: GiteaPgPvcName,
-		GiteaPgServiceName: GiteaPgServiceName,
-		GiteaReposPvcName: GiteaReposPvcName,
+		GiteaConfigMapName:      GiteaConfigMapName,
+		GiteaDeploymentName:     GiteaDeploymentName,
+		GiteaIngressName:        GiteaIngressName,
+		GiteaPgDeploymentName:   GiteaPgDeploymentName,
+		GiteaPgPvcName:          GiteaPgPvcName,
+		GiteaPgServiceName:      GiteaPgServiceName,
+		GiteaReposPvcName:       GiteaReposPvcName,
 		GiteaServiceAccountName: GiteaServiceAccountName,
-		GiteaServiceName: GiteaServiceName,
-		ProxyDeploymentName: ProxyDeploymentName,
-		ProxyRouteName: ProxyRouteName,
-		ProxyServiceName: ProxyServiceName,
+		GiteaServiceName:        GiteaServiceName,
+		ProxyDeploymentName:     ProxyDeploymentName,
+		ProxyRouteName:          ProxyRouteName,
+		ProxyServiceName:        ProxyServiceName,
 		ProxyServiceAccountName: ProxyServiceAccountName,
-		ApplicationNamespace: cr.Namespace,
-		ApplicationName: "gitea",
-		Hostname: cr.Spec.Hostname,
-		DatabaseUser: "gitea",
-		DatabasePassword: DatabasePassword,
-		DatabaseAdminPassword: DatabaseAdminPassword,
-		DatabaseName: "gitea",
-		DatabaseMaxConnections: "100",
-		DatabaseSharedBuffers: "12MB",
-		InstallLock: true,
-		GiteaInternalToken: generateToken(105),
-		GiteaSecretKey: generateToken(10),
-		GiteaImage: GiteaImage,
-		GiteaVersion: GiteaVersion,
-		GiteaVolumeCapacity: "1Gi",
-		DbVolumeCapacity: "1Gi",
+		ApplicationNamespace:    cr.Namespace,
+		ApplicationName:         "gitea",
+		Hostname:                cr.Spec.Hostname,
+		DatabaseUser:            "gitea",
+		DatabasePassword:        DatabasePassword,
+		DatabaseAdminPassword:   DatabaseAdminPassword,
+		DatabaseName:            "gitea",
+		DatabaseMaxConnections:  "100",
+		DatabaseSharedBuffers:   "12MB",
+		InstallLock:             true,
+		GiteaInternalToken:      generateToken(105),
+		GiteaSecretKey:          generateToken(10),
+		GiteaImage:              GiteaImage,
+		GiteaVersion:            GiteaVersion,
+		GiteaVolumeCapacity:     "1Gi",
+		DbVolumeCapacity:        "1Gi",
 	}
 
 	templatePath := os.Getenv("TEMPLATE_PATH")
@@ -124,7 +125,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	}
 
 	return &GiteaTemplateHelper{
-		Parameters: param,
+		Parameters:   param,
 		TemplatePath: templatePath,
 	}
 }
