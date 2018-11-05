@@ -11,8 +11,9 @@ import (
 type GiteaSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	Hostname    string `json:"hostname"`
-	DeployProxy bool   `json:"deployProxy"`
+	Hostname           string `json:"hostname"`
+	DeployProxy        bool   `json:"deployProxy"`
+	GiteaInternalToken string `json:"giteaInternalToken"`
 }
 
 // GiteaStatus defines the observed state of Gitea

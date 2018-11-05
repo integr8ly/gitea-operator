@@ -3,11 +3,12 @@ package gitea
 import (
 	"bytes"
 	"fmt"
-	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"text/template"
+
+	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 )
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -111,7 +112,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		DatabaseMaxConnections:  "100",
 		DatabaseSharedBuffers:   "12MB",
 		InstallLock:             true,
-		GiteaInternalToken:      generateToken(105),
+		GiteaInternalToken:      giteaInternalTokenSetter(cr),
 		GiteaSecretKey:          generateToken(10),
 		GiteaImage:              GiteaImage,
 		GiteaVersion:            GiteaVersion,
@@ -128,6 +129,14 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		Parameters:   param,
 		TemplatePath: templatePath,
 	}
+}
+
+func giteaInternalTokenSetter(cr *integreatlyv1alpha1.Gitea) string {
+	giteaInternalToken := cr.Spec.GiteaInternalToken
+	if giteaInternalToken == "" {
+		giteaInternalToken = generateToken(105)
+	}
+	return giteaInternalToken
 }
 
 // load a template from a given resource name. The template must be located
