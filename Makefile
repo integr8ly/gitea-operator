@@ -14,6 +14,11 @@ test-unit:
 	@echo Running tests:
 	go test -v -race -cover ./pkg/...
 
+.PHONY: test-e2e-local
+test-e2e-local:
+	@echo Running e2e tests:
+	operator-sdk test local ./test/e2e --go-test-flags "-v"
+
 .PHONY: setup
 setup:
 	@echo Installing golang dependencies
