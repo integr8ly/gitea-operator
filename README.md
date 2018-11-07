@@ -24,7 +24,7 @@ $ oc create -f deploy/role_binding.yaml
 We also need to install the custom resource definition that this Operator watches.
 
 ```sh
-$ oc create -f deploy/crds/integreatly_v1alpha1_gitea_crd.yaml
+$ oc create -f deploy/crds/crd.yaml
 ```
 
 Finally we can deploy the operator itself.
@@ -47,9 +47,10 @@ metadata:
 spec:
   hostname: <gitea.apps.CLUSTER_URL>
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
+  giteaInternalToken: <Gitea internal token - If no value is specified a token will be generated>
 ```
 
-An example can be found under `deploy/crds/integreatly_v1alpha1_gitea_cr.yaml`
+An example can be found under `deploy/cr.yaml`
 
 Start the installation with
 
