@@ -61,22 +61,24 @@ type GiteaParameters struct {
 	ProxyServiceAccountName string
 
 	// Resource properties
-	ApplicationNamespace   string
-	ApplicationName        string
-	Hostname               string
-	DatabaseUser           string
-	DatabasePassword       string
-	DatabaseAdminPassword  string
-	DatabaseName           string
-	DatabaseMaxConnections string
-	DatabaseSharedBuffers  string
-	InstallLock            bool
-	GiteaInternalToken     string
-	GiteaSecretKey         string
-	GiteaImage             string
-	GiteaVersion           string
-	GiteaVolumeCapacity    string
-	DbVolumeCapacity       string
+	ApplicationNamespace             string
+	ApplicationName                  string
+	Hostname                         string
+	DatabaseUser                     string
+	DatabasePassword                 string
+	DatabaseAdminPassword            string
+	DatabaseName                     string
+	DatabaseMaxConnections           string
+	DatabaseSharedBuffers            string
+	InstallLock                      bool
+	GiteaInternalToken               string
+	GiteaSecretKey                   string
+	GiteaImage                       string
+	GiteaVersion                     string
+	GiteaVolumeCapacity              string
+	DbVolumeCapacity                 string
+	ReverseProxyAuthenticationUser   string
+	EnableReverseProxyAuthentication bool
 }
 
 type GiteaTemplateHelper struct {
@@ -89,35 +91,37 @@ type GiteaTemplateHelper struct {
 // by the user in the custom resource
 func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	param := GiteaParameters{
-		GiteaConfigMapName:      GiteaConfigMapName,
-		GiteaDeploymentName:     GiteaDeploymentName,
-		GiteaIngressName:        GiteaIngressName,
-		GiteaPgDeploymentName:   GiteaPgDeploymentName,
-		GiteaPgPvcName:          GiteaPgPvcName,
-		GiteaPgServiceName:      GiteaPgServiceName,
-		GiteaReposPvcName:       GiteaReposPvcName,
-		GiteaServiceAccountName: GiteaServiceAccountName,
-		GiteaServiceName:        GiteaServiceName,
-		ProxyDeploymentName:     ProxyDeploymentName,
-		ProxyRouteName:          ProxyRouteName,
-		ProxyServiceName:        ProxyServiceName,
-		ProxyServiceAccountName: ProxyServiceAccountName,
-		ApplicationNamespace:    cr.Namespace,
-		ApplicationName:         "gitea",
-		Hostname:                cr.Spec.Hostname,
-		DatabaseUser:            "gitea",
-		DatabasePassword:        DatabasePassword,
-		DatabaseAdminPassword:   DatabaseAdminPassword,
-		DatabaseName:            "gitea",
-		DatabaseMaxConnections:  "100",
-		DatabaseSharedBuffers:   "12MB",
-		InstallLock:             true,
-		GiteaInternalToken:      giteaInternalTokenSetter(cr),
-		GiteaSecretKey:          generateToken(10),
-		GiteaImage:              GiteaImage,
-		GiteaVersion:            GiteaVersion,
-		GiteaVolumeCapacity:     "1Gi",
-		DbVolumeCapacity:        "1Gi",
+		GiteaConfigMapName:               GiteaConfigMapName,
+		GiteaDeploymentName:              GiteaDeploymentName,
+		GiteaIngressName:                 GiteaIngressName,
+		GiteaPgDeploymentName:            GiteaPgDeploymentName,
+		GiteaPgPvcName:                   GiteaPgPvcName,
+		GiteaPgServiceName:               GiteaPgServiceName,
+		GiteaReposPvcName:                GiteaReposPvcName,
+		GiteaServiceAccountName:          GiteaServiceAccountName,
+		GiteaServiceName:                 GiteaServiceName,
+		ProxyDeploymentName:              ProxyDeploymentName,
+		ProxyRouteName:                   ProxyRouteName,
+		ProxyServiceName:                 ProxyServiceName,
+		ProxyServiceAccountName:          ProxyServiceAccountName,
+		ApplicationNamespace:             cr.Namespace,
+		ApplicationName:                  "gitea",
+		Hostname:                         cr.Spec.Hostname,
+		DatabaseUser:                     "gitea",
+		DatabasePassword:                 DatabasePassword,
+		DatabaseAdminPassword:            DatabaseAdminPassword,
+		DatabaseName:                     "gitea",
+		DatabaseMaxConnections:           "100",
+		DatabaseSharedBuffers:            "12MB",
+		InstallLock:                      true,
+		GiteaInternalToken:               giteaInternalTokenSetter(cr),
+		GiteaSecretKey:                   generateToken(10),
+		GiteaImage:                       GiteaImage,
+		GiteaVersion:                     GiteaVersion,
+		GiteaVolumeCapacity:              "1Gi",
+		DbVolumeCapacity:                 "1Gi",
+		ReverseProxyAuthenticationUser:   reverseProxyAuthUserSetter(cr),
+		EnableReverseProxyAuthentication: cr.Spec.EnableReverseProxyAuthentication,
 	}
 
 	templatePath := os.Getenv("TEMPLATE_PATH")
@@ -131,15 +135,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	}
 }
 
-func giteaInternalTokenSetter(cr *integreatlyv1alpha1.Gitea) string {
-	giteaInternalToken := cr.Spec.GiteaInternalToken
-	if giteaInternalToken == "" {
-		giteaInternalToken = generateToken(105)
-	}
-	return giteaInternalToken
-}
-
-// load a templates from a given resource name. The templates must be located
+// load a template from a given resource name. The template must be located
 // under ./templates and the filename must be <resource-name>.yaml
 func (h *GiteaTemplateHelper) loadTemplate(name string) ([]byte, error) {
 	path := fmt.Sprintf("%s/%s.yaml", h.TemplatePath, name)
@@ -160,4 +156,21 @@ func (h *GiteaTemplateHelper) loadTemplate(name string) ([]byte, error) {
 	}
 
 	return buffer.Bytes(), nil
+}
+
+// Resource property setters
+func giteaInternalTokenSetter(cr *integreatlyv1alpha1.Gitea) string {
+	giteaInternalToken := cr.Spec.GiteaInternalToken
+	if giteaInternalToken == "" {
+		giteaInternalToken = generateToken(105)
+	}
+	return giteaInternalToken
+}
+
+func reverseProxyAuthUserSetter(cr *integreatlyv1alpha1.Gitea) string {
+	reverseProxyAuthUser := cr.Spec.ReverseProxyAuthenticationUser
+	if reverseProxyAuthUser == "" {
+		reverseProxyAuthUser = "X-WEBAUTH-USER"
+	}
+	return reverseProxyAuthUser
 }

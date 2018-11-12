@@ -13,6 +13,7 @@ data:
     INTERNAL_TOKEN = {{ .GiteaInternalToken }}
     INSTALL_LOCK   = true
     SECRET_KEY     = {{ .GiteaSecretKey }}
+    REVERSE_PROXY_AUTHENTICATION_USER = {{ .ReverseProxyAuthenticationUser }}
 
     [database]
     DB_TYPE  = postgres
@@ -50,6 +51,7 @@ data:
     DEFAULT_ALLOW_CREATE_ORGANIZATION = true
     DEFAULT_ENABLE_TIMETRACKING       = true
     NO_REPLY_ADDRESS                  = noreply.example.org
+    ENABLE_REVERSE_PROXY_AUTHENTICATION = {{ .EnableReverseProxyAuthentication }}
 
     [picture]
     DISABLE_GRAVATAR        = false

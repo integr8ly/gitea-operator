@@ -52,6 +52,8 @@ spec:
   hostname: <gitea.apps.CLUSTER_URL>
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
   giteaInternalToken: <Gitea internal token - If no value is specified a token will be generated>
+  reverseProxyAuthenticationUser: <Header name for reverse proxy authentication (Default value: X-WEBAUTH-USER)>
+  enableReverseProxyAuthentication: <Set this to true to allow reverse proxy authentication (Default value: False)>
 ```
 
 An example can be found under `deploy/cr.yaml`
