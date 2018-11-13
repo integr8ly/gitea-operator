@@ -16,10 +16,15 @@ First we need to create a Service Account, Role and Role Binding in order to gra
 
 ```sh
 $ oc login -u system:admin
-$ make build
-$ make push
+$ ORG=<registry url> make build
+$ ORG=<registry url> make push
 $ make install
-$ oc create -f deploy/operator.yaml
+```
+
+Then review `deploy/operator.yaml` and update the image url to your preferred registry and deploy it:
+
+```sh
+$ make deploy
 ```
 
 Verify the Operator is running by opening the `gitea` namespace. You should see a Pod with the name `gitea-operator`.
