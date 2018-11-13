@@ -12,28 +12,32 @@ The Operator will also watch all Gitea resources and reinstall them if they are 
 
 ## Installing the Operator
 
-First we need to create a Service Account, Role and Role Binding in order to grant the required permissions to the Operator. Make sure you are logged in with a user that has permission to create those resources.
+First we need to create a Service Account, Role and Role Binding in order to grant the required permissions to the Operator. The `install` target of the Makefile will take care of this. Make sure you are logged in with a user that has permission to create those resources.
 
 ```sh
 $ oc login -u system:admin
-$ oc create -f deploy/service_account.yaml
-$ oc create -f deploy/role.yaml
-$ oc create -f deploy/role_binding.yaml
+$ ORG=<registry url> make build
+$ ORG=<registry url> make push
+$ make install
 ```
 
-We also need to install the custom resource definition that this Operator watches.
+Then review `deploy/operator.yaml` and update the image url to your preferred registry and deploy it:
 
 ```sh
-$ oc create -f deploy/crds/crd.yaml
+$ make deploy
 ```
 
-Finally we can deploy the operator itself.
+Verify the Operator is running by opening the `gitea` namespace. You should see a Pod with the name `gitea-operator`.
+
+## Running the Operator locally
+
+Instead of pulling the operator image from a registry and installing it in your namespace you can also run the Operator locally. This is especially useful for development:
 
 ```sh
-$ oc create -f deploy/operator.yaml
+$ oc login -u system:admin
+$ make install
+$ make run
 ```
-
-Verify the Operator is running by opening your namespace. You should see a Pod with the name `gitea-operator`.
 
 ## Installing Gitea
 
