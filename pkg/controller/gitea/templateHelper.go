@@ -84,8 +84,8 @@ type GiteaTemplateHelper struct {
 	TemplatePath string
 }
 
-// Creates a new template helper and populates the values for all
-// template properties. Some of them (like the hostname) are set
+// Creates a new templates helper and populates the values for all
+// templates properties. Some of them (like the hostname) are set
 // by the user in the custom resource
 func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	param := GiteaParameters{
@@ -139,7 +139,7 @@ func giteaInternalTokenSetter(cr *integreatlyv1alpha1.Gitea) string {
 	return giteaInternalToken
 }
 
-// load a template from a given resource name. The template must be located
+// load a templates from a given resource name. The templates must be located
 // under ./templates and the filename must be <resource-name>.yaml
 func (h *GiteaTemplateHelper) loadTemplate(name string) ([]byte, error) {
 	path := fmt.Sprintf("%s/%s.yaml", h.TemplatePath, name)

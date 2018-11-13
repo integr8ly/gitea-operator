@@ -76,21 +76,21 @@ check: check-gofmt test-unit
 .PHONY: install
 install: install-crds
 	-oc new-project $(NAMESPACE)
-	-kubectl create --insecure-skip-tls-verify -f deploy/service_account.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role_binding.yaml -n $(NAMESPACE)
+	-kubectl create --insecure-skip-tls-verify -f deploy/service_account.yaml -n $(NAMESPACE)
 
 .PHONY: install-crds
 install-crds:
-	-kubectl create -f deploy/crds/crd.yaml
+	-kubectl apply -f deploy/crds/crd.yaml
 
 .PHONY: uninstall
 uninstall:
-	-kubectl delete -f deploy/service_account.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/role.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/role_binding.yaml -n $(NAMESPACE)
+	-kubectl delete -f deploy/service_account.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/crds/crd.yaml -n $(NAMESPACE)
-	-kubectl delete namespace $(NAMESPACE)
+	-oc delete project $(NAMESPACE)
 
 .PHONY: create-examples
 create-examples:

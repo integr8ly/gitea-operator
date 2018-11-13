@@ -116,13 +116,13 @@ func (r *ReconcileGitea) Reconcile(request reconcile.Request) (reconcile.Result,
 	return reconcile.Result{}, nil
 }
 
-// Creates a generic kubernetes resource from a template
+// Creates a generic kubernetes resource from a templates
 func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceName string) {
 	resourceHelper := newResourceHelper(cr)
 	resource, err := resourceHelper.createResource(resourceName)
 
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		log.Printf("Error parsing templates: %s", err)
 		return
 	}
 
