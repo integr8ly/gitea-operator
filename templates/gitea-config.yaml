@@ -64,7 +64,7 @@ data:
 
     [log]
     MODE      = file
-    LEVEL     = Trace
+    LEVEL     = Info
     ROOT_PATH = /home/gitea/log
 
     [markup.asciidoc]
