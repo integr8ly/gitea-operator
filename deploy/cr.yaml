@@ -3,5 +3,5 @@ kind: Gitea
 metadata:
   name: example-gitea
 spec:
-  hostname: "gitea.apps.pbraun-dcdc.openshiftworkshop.com"
-  deployProxy: True
+  hostname: "gitea.apps.127.0.0.1.nip.io"
+  deployProxy: False

@@ -27,6 +27,9 @@ spec:
         - containerPort: 3000
           protocol: TCP
         resources: {}
+        env:
+          - name: USER
+            value: {{ .ApplicationName }}
         terminationMessagePath: /dev/termination-log
         volumeMounts:
         - name: {{ .GiteaReposPvcName }}

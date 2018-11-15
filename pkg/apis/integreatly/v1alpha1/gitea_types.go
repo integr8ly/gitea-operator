@@ -13,7 +13,6 @@ type GiteaSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	Hostname           string `json:"hostname"`
 	DeployProxy        bool   `json:"deployProxy"`
-	GiteaInternalToken string `json:"giteaInternalToken"`
 }
 
 // GiteaStatus defines the observed state of Gitea

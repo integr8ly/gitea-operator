@@ -112,7 +112,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		DatabaseMaxConnections:  "100",
 		DatabaseSharedBuffers:   "12MB",
 		InstallLock:             true,
-		GiteaInternalToken:      giteaInternalTokenSetter(cr),
+		GiteaInternalToken:      generateToken(105),
 		GiteaSecretKey:          generateToken(10),
 		GiteaImage:              GiteaImage,
 		GiteaVersion:            GiteaVersion,
@@ -129,14 +129,6 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		Parameters:   param,
 		TemplatePath: templatePath,
 	}
-}
-
-func giteaInternalTokenSetter(cr *integreatlyv1alpha1.Gitea) string {
-	giteaInternalToken := cr.Spec.GiteaInternalToken
-	if giteaInternalToken == "" {
-		giteaInternalToken = generateToken(105)
-	}
-	return giteaInternalToken
 }
 
 // load a templates from a given resource name. The templates must be located
