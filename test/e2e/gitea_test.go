@@ -135,8 +135,8 @@ func createGiteaCustomResource(t *testing.T, f *framework.Framework, ctx *framew
 			Namespace: namespace,
 		},
 		Spec: giteav1alpha1.GiteaSpec{
-			Hostname:           "example.gitea.host.com",
-			DeployProxy:        deployProxy,
+			Hostname:    "example.gitea.host.com",
+			DeployProxy: deployProxy,
 		},
 	}
 
