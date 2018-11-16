@@ -51,7 +51,6 @@ metadata:
 spec:
   hostname: <gitea.apps.CLUSTER_URL>
   deployProxy: <Only on OpenShift: deploy OAuth Proxy>
-  giteaInternalToken: <Gitea internal token - If no value is specified a token will be generated>
 ```
 
 An example can be found under `deploy/cr.yaml`
