@@ -109,8 +109,7 @@ func (r *ReconcileGitea) InstallDatabase(cr *integreatlyv1alpha1.Gitea) (reconci
 	r.CreateResource(cr, GiteaPgServiceName)
 	r.CreateResource(cr, GiteaPgDeploymentName)
 	r.CreateResource(cr, GiteaPgPvcName)
-	r.UpdatePhase(cr, PhaseWaitDatabase)
-	return reconcile.Result{Requeue: true}, nil
+	return reconcile.Result{Requeue: true}, r.UpdatePhase(cr, PhaseWaitDatabase)
 }
 
 func (r *ReconcileGitea) WaitForDatabase(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
