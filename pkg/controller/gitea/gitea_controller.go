@@ -2,8 +2,9 @@ package gitea
 
 import (
 	"context"
-	"k8s.io/api/apps/v1beta1"
 	"log"
+
+	"k8s.io/api/apps/v1beta1"
 
 	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -135,17 +136,8 @@ func (r *ReconcileGitea) InstallGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.
 	r.CreateResource(cr, GiteaDeploymentName)
 	r.CreateResource(cr, GiteaReposPvcName)
 	r.CreateResource(cr, GiteaConfigMapName)
+	r.CreateResource(cr, GiteaIngressName)
 
-	// The oauth-proxy is only compatible with Openshift because it
-	// does not support ingress
-	if cr.Spec.DeployProxy {
-		r.CreateResource(cr, ProxyServiceAccountName)
-		r.CreateResource(cr, ProxyServiceName)
-		r.CreateResource(cr, ProxyDeploymentName)
-		r.CreateResource(cr, ProxyRouteName)
-	} else {
-		r.CreateResource(cr, GiteaIngressName)
-	}
 	return reconcile.Result{}, r.UpdatePhase(cr, PhaseDone)
 }
 

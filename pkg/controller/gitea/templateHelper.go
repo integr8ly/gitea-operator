@@ -25,10 +25,6 @@ const (
 	GiteaReposPvcName       = "gitea-repos-pvc"
 	GiteaServiceAccountName = "gitea-service-account"
 	GiteaServiceName        = "gitea-service"
-	ProxyDeploymentName     = "oauth-proxy"
-	ProxyRouteName          = "oauth-proxy-route"
-	ProxyServiceName        = "oauth-proxy-service"
-	ProxyServiceAccountName = "oauth-proxy-service-account"
 )
 
 func generateToken(n int) string {
@@ -53,12 +49,6 @@ type GiteaParameters struct {
 	GiteaReposPvcName       string
 	GiteaServiceAccountName string
 	GiteaServiceName        string
-
-	// OAuth Proxy names
-	ProxyDeploymentName     string
-	ProxyRouteName          string
-	ProxyServiceName        string
-	ProxyServiceAccountName string
 
 	// Resource properties
 	ApplicationNamespace   string
@@ -98,10 +88,6 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		GiteaReposPvcName:       GiteaReposPvcName,
 		GiteaServiceAccountName: GiteaServiceAccountName,
 		GiteaServiceName:        GiteaServiceName,
-		ProxyDeploymentName:     ProxyDeploymentName,
-		ProxyRouteName:          ProxyRouteName,
-		ProxyServiceName:        ProxyServiceName,
-		ProxyServiceAccountName: ProxyServiceAccountName,
 		ApplicationNamespace:    cr.Namespace,
 		ApplicationName:         "gitea",
 		Hostname:                cr.Spec.Hostname,

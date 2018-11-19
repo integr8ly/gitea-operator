@@ -12,8 +12,7 @@ var MockCR = integreatlyv1alpha1.Gitea{
 		Namespace: ExampleNamespace,
 	},
 	Spec: integreatlyv1alpha1.GiteaSpec{
-		DeployProxy: true,
-		Hostname:    "gitea.example.com",
+		Hostname: "gitea.example.com",
 	},
 }
 
@@ -27,8 +26,4 @@ var Templates = []string{
 	GiteaServiceName,
 	GiteaPgDeploymentName,
 	GiteaPgServiceName,
-	ProxyRouteName,
-	ProxyDeploymentName,
-	ProxyServiceName,
-	ProxyServiceAccountName,
 }
