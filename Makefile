@@ -1,8 +1,8 @@
-ORG=integreatly
-NAMESPACE=gitea
+ORG ?= integreatly
+NAMESPACE ?= gitea
 PROJECT=gitea-operator
 SHELL= /bin/bash
-TAG = 0.0.1
+TAG ?= 0.0.1
 PKG = github.com/integr8ly/gitea-operator
 
 .PHONY: check-gofmt
