@@ -2,10 +2,10 @@ package gitea
 
 import (
 	"context"
+	"k8s.io/api/apps/v1beta1"
 	"log"
 
 	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,6 +17,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+)
+
+const (
+	PhaseInstallDatabase = iota
+	PhaseWaitDatabase
+	PhaseInstallGitea
+	PhaseDone
 )
 
 // Add creates a new Gitea Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -40,16 +47,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource Gitea
 	err = c.Watch(&source.Kind{Type: &integreatlyv1alpha1.Gitea{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
-	// Watch for changes to secondary resource Pods and requeue the owner Gitea
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &integreatlyv1alpha1.Gitea{},
-	})
 	if err != nil {
 		return err
 	}
@@ -92,28 +89,85 @@ func (r *ReconcileGitea) Reconcile(request reconcile.Request) (reconcile.Result,
 
 	instanceCopy := instance.DeepCopy()
 
-	// Try create all gitea resources
-	r.CreateResource(instanceCopy, GiteaServiceAccountName)
-	r.CreateResource(instanceCopy, GiteaPgServiceName)
-	r.CreateResource(instanceCopy, GiteaPgDeploymentName)
-	r.CreateResource(instanceCopy, GiteaServiceName)
-	r.CreateResource(instanceCopy, GiteaDeploymentName)
-	r.CreateResource(instanceCopy, GiteaReposPvcName)
-	r.CreateResource(instanceCopy, GiteaPgPvcName)
-	r.CreateResource(instanceCopy, GiteaConfigMapName)
-
-	// The oauth-proxy is only compatible with Openshift because it
-	// does not support ingress
-	if instanceCopy.Spec.DeployProxy {
-		r.CreateResource(instanceCopy, ProxyServiceAccountName)
-		r.CreateResource(instanceCopy, ProxyServiceName)
-		r.CreateResource(instanceCopy, ProxyDeploymentName)
-		r.CreateResource(instanceCopy, ProxyRouteName)
-	} else {
-		r.CreateResource(instanceCopy, GiteaIngressName)
+	switch instanceCopy.Status.Phase {
+	case PhaseInstallDatabase:
+		return r.InstallDatabase(instanceCopy)
+	case PhaseWaitDatabase:
+		return r.WaitForDatabase(instanceCopy)
+	case PhaseInstallGitea:
+		return r.InstallGitea(instanceCopy)
+	case PhaseDone:
+		log.Printf("Gitea installation complete")
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileGitea) InstallDatabase(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
+	log.Printf("Phase: Install Database")
+	r.CreateResource(cr, GiteaServiceAccountName)
+	r.CreateResource(cr, GiteaPgServiceName)
+	r.CreateResource(cr, GiteaPgDeploymentName)
+	r.CreateResource(cr, GiteaPgPvcName)
+	return reconcile.Result{Requeue: true}, r.UpdatePhase(cr, PhaseWaitDatabase)
+}
+
+func (r *ReconcileGitea) WaitForDatabase(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
+	log.Printf("Phase: Wait for Database")
+
+	ready, err := r.GetPostgresReady(cr)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if !ready {
+		return reconcile.Result{Requeue: true}, nil
+	}
+
+	return reconcile.Result{Requeue: true}, r.UpdatePhase(cr, PhaseInstallGitea)
+}
+
+func (r *ReconcileGitea) InstallGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
+	log.Printf("Phase: Install Gitea")
+
+	// Try create all gitea resources
+	r.CreateResource(cr, GiteaServiceName)
+	r.CreateResource(cr, GiteaDeploymentName)
+	r.CreateResource(cr, GiteaReposPvcName)
+	r.CreateResource(cr, GiteaConfigMapName)
+
+	// The oauth-proxy is only compatible with Openshift because it
+	// does not support ingress
+	if cr.Spec.DeployProxy {
+		r.CreateResource(cr, ProxyServiceAccountName)
+		r.CreateResource(cr, ProxyServiceName)
+		r.CreateResource(cr, ProxyDeploymentName)
+		r.CreateResource(cr, ProxyRouteName)
+	} else {
+		r.CreateResource(cr, GiteaIngressName)
+	}
+	return reconcile.Result{}, r.UpdatePhase(cr, PhaseDone)
+}
+
+func (r *ReconcileGitea) UpdatePhase(cr *integreatlyv1alpha1.Gitea, phase int) error {
+	cr.Status.Phase = phase
+	return r.client.Update(context.TODO(), cr)
+}
+
+func (r *ReconcileGitea) GetPostgresReady(cr *integreatlyv1alpha1.Gitea) (bool, error) {
+	resource := v1beta1.Deployment{}
+
+	selector := types.NamespacedName{
+		Namespace: cr.Namespace,
+		Name:      "postgres",
+	}
+
+	err := r.client.Get(context.TODO(), selector, &resource)
+	if err != nil {
+		return false, err
+	}
+
+	return resource.Status.ReadyReplicas == 1, nil
 }
 
 // Creates a generic kubernetes resource from a templates
