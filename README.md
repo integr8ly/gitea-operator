@@ -7,7 +7,7 @@
 | License:        | Apache License, Version 2.0                      |
 | IRC             | [#integreatly](https://webchat.freenode.net/?channels=integreatly) channel in the [freenode](http://freenode.net/) network. |
 
-An Operator that installs Gitea and, optionally on OpenShift, an oauth proxy. Installation is performed by creating a custom resource of kind `Gitea`. You can uninstall Gitea by removing this resource.
+An Operator that installs Gitea. Installation is performed by creating a custom resource of kind `Gitea`. You can uninstall Gitea by removing this resource.
 The Operator will also watch all Gitea resources and reinstall them if they are deleted.
 
 ## Installing the Operator
@@ -50,7 +50,6 @@ metadata:
   name: example-gitea
 spec:
   hostname: <gitea.apps.CLUSTER_URL>
-  deployProxy: <Only on OpenShift: deploy OAuth Proxy>
 ```
 
 An example can be found under `deploy/cr.yaml`

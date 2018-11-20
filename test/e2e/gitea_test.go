@@ -36,12 +36,11 @@ func TestGitea(t *testing.T) {
 	}
 	// run subtests
 	t.Run("gitea-e2e", func(t *testing.T) {
-		t.Run("test-with-oauthproxy", GiteaWithOAuth)
-		t.Run("test-no-oauthproxy", GiteaNoOAuth)
+		t.Run("test", GiteaTest)
 	})
 }
 
-func GiteaWithOAuth(t *testing.T) {
+func GiteaTest(t *testing.T) {
 	t.Parallel()
 	ctx := framework.NewTestCtx(t)
 	defer ctx.Cleanup()
@@ -58,44 +57,8 @@ func GiteaWithOAuth(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Create Gitea custom resource with deployProxy set to true
-	if err := createGiteaCustomResource(t, f, ctx, namespace, true); err != nil {
-		t.Fatal(err)
-	}
-
-	// Ensure that the oauth-proxy gets deployed successfully
-	if err := e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "oauth-proxy", 1, retryInterval, timeout); err != nil {
-		t.Fatal(err)
-	}
-	t.Log("Oauth-proxy successfully deployed")
-
-	// Ensure that Gitea resources were deployed and created successfully
-	if err := checkGiteaResources(t, f, namespace); err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log("Gitea successfully deployed with oauth proxy")
-}
-
-func GiteaNoOAuth(t *testing.T) {
-	t.Parallel()
-	ctx := framework.NewTestCtx(t)
-	defer ctx.Cleanup()
-
-	f := framework.Global
-
-	namespace, err := ctx.GetNamespace()
-	if err != nil {
-		t.Fatalf("failed to get namespace: %v", err)
-	}
-
-	// Create Gitea rbac and CRD resources
-	if err := initializeGiteaResources(t, f, ctx, namespace); err != nil {
-		t.Fatal(err)
-	}
-
-	// Create Gitea custom resource with deployProxy set to true
-	if err := createGiteaCustomResource(t, f, ctx, namespace, false); err != nil {
+	// Create Gitea custom resource
+	if err := createGiteaCustomResource(t, f, ctx, namespace); err != nil {
 		t.Fatal(err)
 	}
 
@@ -124,7 +87,7 @@ func initializeGiteaResources(t *testing.T, f *framework.Framework, ctx *framewo
 	return nil
 }
 
-func createGiteaCustomResource(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string, deployProxy bool) error {
+func createGiteaCustomResource(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
 	exampleGitea := &giteav1alpha1.Gitea{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Gitea",
@@ -135,8 +98,7 @@ func createGiteaCustomResource(t *testing.T, f *framework.Framework, ctx *framew
 			Namespace: namespace,
 		},
 		Spec: giteav1alpha1.GiteaSpec{
-			Hostname:    "example.gitea.host.com",
-			DeployProxy: deployProxy,
+			Hostname: "example.gitea.host.com",
 		},
 	}
 
