@@ -2,6 +2,7 @@ package gitea
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"k8s.io/api/apps/v1beta1"
@@ -106,10 +107,15 @@ func (r *ReconcileGitea) Reconcile(request reconcile.Request) (reconcile.Result,
 
 func (r *ReconcileGitea) InstallDatabase(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
 	log.Printf("Phase: Install Database")
-	r.CreateResource(cr, GiteaServiceAccountName)
-	r.CreateResource(cr, GiteaPgServiceName)
-	r.CreateResource(cr, GiteaPgDeploymentName)
-	r.CreateResource(cr, GiteaPgPvcName)
+
+	for _, resourceName := range []string{GiteaServiceAccountName, GiteaPgServiceName, GiteaPgDeploymentName, GiteaPgPvcName} {
+		if err := r.CreateResource(cr, resourceName); err != nil {
+			log.Printf("Error in InstallDatabase resourceName=%s : err=%s", resourceName, err)
+			// Requeue so it can be attempted again
+			return reconcile.Result{Requeue: true}, err
+		}
+	}
+
 	return reconcile.Result{Requeue: true}, r.UpdatePhase(cr, PhaseWaitDatabase)
 }
 
@@ -132,11 +138,13 @@ func (r *ReconcileGitea) InstallGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.
 	log.Printf("Phase: Install Gitea")
 
 	// Try create all gitea resources
-	r.CreateResource(cr, GiteaServiceName)
-	r.CreateResource(cr, GiteaDeploymentName)
-	r.CreateResource(cr, GiteaReposPvcName)
-	r.CreateResource(cr, GiteaConfigMapName)
-	r.CreateResource(cr, GiteaIngressName)
+	for _, resourceName := range []string{GiteaServiceName, GiteaDeploymentName, GiteaReposPvcName, GiteaConfigMapName, GiteaIngressName} {
+		if err := r.CreateResource(cr, resourceName); err != nil {
+			log.Printf("Error in InstallGitea resourceName=%s : err=%s", resourceName, err)
+			// Requeue so it can be attempted again
+			return reconcile.Result{Requeue: true}, err
+		}
+	}
 
 	return reconcile.Result{}, r.UpdatePhase(cr, PhaseDone)
 }
@@ -163,13 +171,12 @@ func (r *ReconcileGitea) GetPostgresReady(cr *integreatlyv1alpha1.Gitea) (bool, 
 }
 
 // Creates a generic kubernetes resource from a templates
-func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceName string) {
+func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceName string) error {
 	resourceHelper := newResourceHelper(cr)
 	resource, err := resourceHelper.createResource(resourceName)
 
 	if err != nil {
-		log.Printf("Error parsing templates: %s", err)
-		return
+		return fmt.Errorf("Error parsing templates: %s", err)
 	}
 
 	// Try to find the resource, it may already exist
@@ -181,26 +188,26 @@ func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceN
 
 	// The resource exists, do nothing
 	if err == nil {
-		return
+		return nil
 	}
 
 	// Resource does not exist or something went wrong
 	if errors.IsNotFound(err) {
 		log.Printf("Resource '%s' is missing. Creating it.", resourceName)
 	} else {
-		log.Printf("Error reading resource '%s': %s", resourceName, err)
-		return
+		return fmt.Errorf("Error reading resource '%s': %s", resourceName, err)
 	}
 
 	// Set the CR as the owner of this resource so that when
 	// the CR is deleted this resource also gets removed
 	err = controllerutil.SetControllerReference(cr, resource.(v1.Object), r.scheme)
 	if err != nil {
-		log.Printf("Error setting the custom resource as owner: %s", err)
+		return fmt.Errorf("Error setting the custom resource as owner: %s", err)
 	}
 
 	err = r.client.Create(context.TODO(), resource)
 	if err != nil {
-		log.Printf("Error creating resource: %s", err)
+		return fmt.Errorf("Error creating resource: %s", err)
 	}
+	return nil
 }
