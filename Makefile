@@ -28,15 +28,13 @@ setup:
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	@echo Installing errcheck
 	@go get github.com/kisielk/errcheck
-	@echo Installing packr
-	@go get -u github.com/gobuffalo/packr/packr
 	@echo setup complete run make build deploy to build and deploy the operator to a local cluster
 
 .PHONY: build-image
-build-image: packr compile build packr-clean
+build-image: compile build
 
 .PHONY: docker-build-image
-docker-build-image: packr compile docker-build packr-clean
+docker-build-image:  compile docker-build
 
 .PHONY: docker-build
 docker-build:
@@ -67,14 +65,6 @@ generate:
 .PHONY: compile
 compile:
 	go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
-
-.PHONY: packr
-packr:
-	packr
-
-.PHONY: packr-clean
-packr-clean:
-	packr clean
 
 .PHONY: check
 check: check-gofmt test-unit

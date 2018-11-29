@@ -19,7 +19,7 @@ jobs:
   include:
     - stage: test
       script:
-        - cd $HOME/gopath/src/github.com/integr8ly/$OPERATOR_NAME && make setup test
+        - make setup test
     - stage: compile
       script:
         - make setup docker-build-image TAG=$(git rev-parse --short ${TRAVIS_COMMIT})
