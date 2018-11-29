@@ -4,7 +4,7 @@ PROJECT=gitea-operator
 SHELL= /bin/bash
 TAG ?= 0.0.2
 PKG = github.com/integr8ly/gitea-operator
-
+COMPILE_OUTPUT = build/_output/bin/gitea-operator
 .PHONY: check-gofmt
 check-gofmt:
 	diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
@@ -35,6 +35,13 @@ setup:
 .PHONY: build-image
 build-image: packr compile build packr-clean
 
+.PHONY: docker-build-image
+docker-build-image: packr compile docker-build packr-clean
+
+.PHONY: docker-build
+docker-build:
+	docker build -t quay.io/${ORG}/${PROJECT}:${TAG} -f build/Dockerfile .
+
 .PHONY: build
 build:
 	operator-sdk build quay.io/${ORG}/${PROJECT}:${TAG}
@@ -42,6 +49,9 @@ build:
 .phony: push
 push:
 	docker push quay.io/$(ORG)/$(PROJECT):$(TAG)
+
+.PHONY: docker-build-and-push
+docker-build-and-push: docker-build-image push
 
 .phony: build-and-push
 build-and-push: build-image push
@@ -56,7 +66,7 @@ generate:
 
 .PHONY: compile
 compile:
-	go build -o=gitea-operator ./cmd/manager/main.go
+	go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
 
 .PHONY: packr
 packr:
