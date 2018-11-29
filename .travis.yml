@@ -1,8 +1,29 @@
 language: go
+
 sudo: required
 
 go:
-- 1.10.x
+  - 1.10.x
 
-script:
-- cd $HOME/gopath/src/github.com/integr8ly/gitea-operator && make setup check
+env:
+  global:
+    - OPERATOR_NAME=gitea-operator
+
+stages:
+  - test
+  - compile
+  - name: push
+    if: fork = false
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - make setup test
+    - stage: compile
+      script:
+        - make setup docker-build-image TAG=$(git rev-parse --short ${TRAVIS_COMMIT})
+    - stage: push
+      script:
+        - docker login --password "$QUAY_PASSWORD" --username "$QUAY_USERNAME" quay.io
+        - make setup docker-build-and-push TAG=$(git rev-parse --short ${TRAVIS_COMMIT})

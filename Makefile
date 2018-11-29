@@ -4,7 +4,7 @@ PROJECT=gitea-operator
 SHELL= /bin/bash
 TAG ?= 0.0.2
 PKG = github.com/integr8ly/gitea-operator
-
+COMPILE_OUTPUT = build/_output/bin/gitea-operator
 .PHONY: check-gofmt
 check-gofmt:
 	diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
@@ -28,12 +28,17 @@ setup:
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	@echo Installing errcheck
 	@go get github.com/kisielk/errcheck
-	@echo Installing packr
-	@go get -u github.com/gobuffalo/packr/packr
 	@echo setup complete run make build deploy to build and deploy the operator to a local cluster
 
 .PHONY: build-image
-build-image: packr compile build packr-clean
+build-image: compile build
+
+.PHONY: docker-build-image
+docker-build-image:  compile docker-build
+
+.PHONY: docker-build
+docker-build:
+	docker build -t quay.io/${ORG}/${PROJECT}:${TAG} -f build/Dockerfile .
 
 .PHONY: build
 build:
@@ -42,6 +47,9 @@ build:
 .phony: push
 push:
 	docker push quay.io/$(ORG)/$(PROJECT):$(TAG)
+
+.PHONY: docker-build-and-push
+docker-build-and-push: docker-build-image push
 
 .phony: build-and-push
 build-and-push: build-image push
@@ -56,15 +64,7 @@ generate:
 
 .PHONY: compile
 compile:
-	go build -o=gitea-operator ./cmd/manager/main.go
-
-.PHONY: packr
-packr:
-	packr
-
-.PHONY: packr-clean
-packr-clean:
-	packr clean
+	go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
 
 .PHONY: check
 check: check-gofmt test-unit
