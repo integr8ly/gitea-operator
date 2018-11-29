@@ -33,7 +33,7 @@ setup:
 	@echo setup complete run make build deploy to build and deploy the operator to a local cluster
 
 .PHONY: build-image
-build-image: packr compile build packr-clean
+build-image: build
 
 .PHONY: build
 build:
