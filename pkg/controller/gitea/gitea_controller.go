@@ -151,6 +151,7 @@ func (r *ReconcileGitea) InstallGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.
 
 func (r *ReconcileGitea) UpdatePhase(cr *integreatlyv1alpha1.Gitea, phase int) error {
 	cr.Status.Phase = phase
+	cr.Status.Version = GiteaVersion
 	return r.client.Update(context.TODO(), cr)
 }
 

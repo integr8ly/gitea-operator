@@ -18,7 +18,8 @@ type GiteaSpec struct {
 type GiteaStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	Phase int `json:"phase"`
+	Phase   int    `json:"phase"`
+	Version string `json:"version"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
