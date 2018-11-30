@@ -3,4 +3,4 @@ kind: Gitea
 metadata:
   name: example-gitea
 spec:
-  hostname: "gitea-test.apps.jbriones01-5e89.openshiftworkshop.com"
+  hostname: "gitea.apps.127.0.0.1.nip.io"
