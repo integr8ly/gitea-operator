@@ -64,7 +64,7 @@ generate:
 
 .PHONY: compile
 compile:
-	go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
 
 .PHONY: check
 check: check-gofmt test-unit
