@@ -5,101 +5,91 @@ SHELL= /bin/bash
 TAG ?= 0.0.2
 PKG = github.com/integr8ly/gitea-operator
 COMPILE_OUTPUT = build/_output/bin/gitea-operator
-.PHONY: check-gofmt
-check-gofmt:
-	diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
 
-.PHONY: test-unit
-test-unit:
-	@echo Running tests:
-	go test -v -race -cover ./pkg/...
-
-.PHONY: test-e2e-local
-test-e2e-local:
-	@echo Running e2e tests:
-	operator-sdk test local ./test/e2e --go-test-flags "-v"
-
-.PHONY: setup
-setup:
+.PHONY: setup/dep
+setup/dep:
 	@echo Installing golang dependencies
 	@go get golang.org/x/sys/unix
 	@go get golang.org/x/crypto/ssh/terminal
 	@echo Installing dep
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-	@echo Installing errcheck
-	@go get github.com/kisielk/errcheck
-	@echo setup complete run make build deploy to build and deploy the operator to a local cluster
+	@echo setup complete
 
-.PHONY: build-image
-build-image: compile build
+.PHONY: setup/travis
+setup/travis:
+	@echo Installing Operator SDK
+	@curl -Lo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v0.1.1/operator-sdk-v0.1.1-x86_64-linux-gnu && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
 
-.PHONY: docker-build-image
-docker-build-image:  compile docker-build
+.PHONY: code/run
+code/run:
+	@operator-sdk up local --namespace=${NAMESPACE} --operator-flags=" --resync=10 --log-level=debug"
 
-.PHONY: docker-build
-docker-build:
-	docker build -t quay.io/${ORG}/${PROJECT}:${TAG} -f build/Dockerfile .
+.PHONY: code/compile
+code/compile:
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
 
-.PHONY: build
-build:
-	operator-sdk build quay.io/${ORG}/${PROJECT}:${TAG}
+.PHONY: code/gen
+code/gen:
+	@operator-sdk generate k8s
 
-.phony: push
-push:
-	docker push quay.io/$(ORG)/$(PROJECT):$(TAG)
+ .PHONY: code/check
+code/check:
+	@diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
 
-.PHONY: docker-build-and-push
-docker-build-and-push: docker-build-image push
+ .PHONY: code/fix
+code/fix:
+	@gofmt -w `find . -type f -name '*.go' -not -path "./vendor/*"`
 
-.phony: build-and-push
-build-and-push: build-image push
+.PHONY: image/build
+image/build: code/compile
+	@operator-sdk build quay.io/${ORG}/${PROJECT}:${TAG}
 
-.PHONY: run
-run:
-	operator-sdk up local --namespace=${NAMESPACE} --operator-flags=" --resync=10 --log-level=debug"
+.PHONY: image/push
+image/push:
+	@docker push quay.io/$(ORG)/$(PROJECT):$(TAG)
 
-.PHONY: generate
-generate:
-	operator-sdk generate k8s
+.PHONY: image/build/push
+image/build/push: image/build image/push
 
-.PHONY: compile
-compile:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o=$(COMPILE_OUTPUT) ./cmd/manager/main.go
+.PHONY: test/unit
+test/unit:
+	@echo Running tests:
+	go test -v -race -cover ./pkg/...
 
-.PHONY: check
-check: check-gofmt test-unit
-	@echo errcheck
-	@errcheck -ignoretests $$(go list ./...)
-	@echo go vet
-	@go vet ./...
+.PHONY: test/e2e
+test/e2e:
+	@echo Running e2e tests:
+	operator-sdk test local ./test/e2e --go-test-flags "-v"
 
-.PHONY: install
-install: install-crds
+.PHONY: cluster/prepare
+cluster/prepare:
+	-kubectl apply -f deploy/crds/crd.yaml
 	-oc new-project $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role_binding.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/service_account.yaml -n $(NAMESPACE)
 
-.PHONY: install-crds
-install-crds:
-	-kubectl apply -f deploy/crds/crd.yaml
+.PHONY: cluster/deploy
+cluster/deploy:
+	-kubectl create -f deploy/operator.yaml -n ${NAMESPACE}
 
-.PHONY: uninstall
-uninstall:
+.PHONY: cluster/deploy/remove
+cluster/deploy/remove:
+	-kubectl create -f deploy/operator.yaml -n ${NAMESPACE}
+
+.PHONY: cluster/clean
+cluster/clean:
 	-kubectl delete -f deploy/role.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/role_binding.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/service_account.yaml -n $(NAMESPACE)
 	-kubectl delete -f deploy/crds/crd.yaml -n $(NAMESPACE)
 	-oc delete project $(NAMESPACE)
 
-.PHONY: create-examples
-create-examples:
+.PHONY: cluster/create/examples
+cluster/create/examples:
 	-kubectl create -f deploy/cr.yaml -n $(NAMESPACE)
 
-.PHONY: delete-examples
-delete-examples:
+.PHONY: cluster/delete/examples
+cluster/delete/examples:
 	-kubectl delete -f deploy/cr.yaml -n $(NAMESPACE)
 
-.PHONY: deploy
-deploy:
-	-kubectl create -f deploy/operator.yaml -n ${NAMESPACE}
