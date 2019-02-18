@@ -59,3 +59,20 @@ Start the installation with
 ```
 $ oc create -f <path to your CR>
 ```
+
+## Release
+
+Update operator version files:
+
+* Bump [operator version](version/version.go) 
+```Version = "<version>"```
+* Bump [makefile TAG](Makefile)
+```TAG=<version>```
+* Bump [operator image version](deploy/operator.yaml)
+```image: quay.io/integreatly/gitea-operator:v<version>```
+
+Commit changes and open pull request.
+
+When the PR is accepted, create a new release tag:
+
+```git tag v<version> && git push upstream v<version>```
