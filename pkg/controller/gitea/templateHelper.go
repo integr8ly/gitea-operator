@@ -15,7 +15,7 @@ var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01
 
 const (
 	GiteaImage              = "docker.io/wkulhanek/gitea"
-	GiteaVersion            = "1.6.0"
+	GiteaVersion            = "1.7.0"
 	GiteaConfigMapName      = "gitea-config"
 	GiteaDeploymentName     = "gitea"
 	GiteaIngressName        = "gitea-ingress"
