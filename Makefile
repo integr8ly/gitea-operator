@@ -5,6 +5,7 @@ SHELL= /bin/bash
 TAG ?= 0.0.3
 PKG = github.com/integr8ly/gitea-operator
 COMPILE_OUTPUT = build/_output/bin/gitea-operator
+TEST_COMPILE_OUTPUT = build/_output/bin/gitea-operator-test
 
 .PHONY: setup/dep
 setup/dep:
@@ -60,6 +61,10 @@ test/unit:
 test/e2e:
 	@echo Running e2e tests:
 	operator-sdk test local ./test/e2e --go-test-flags "-v"
+
+.PHONY: test/compile
+test/compile:
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go test -c -o=$(TEST_COMPILE_OUTPUT) ./test/e2e/...
 
 .PHONY: cluster/prepare
 cluster/prepare:
