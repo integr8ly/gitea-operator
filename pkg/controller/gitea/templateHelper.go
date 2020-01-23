@@ -14,8 +14,8 @@ import (
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 const (
-	GiteaImage              = "docker.io/wkulhanek/gitea"
-	GiteaVersion            = "1.6.0"
+	GiteaImage              = "quay.io/integreatly/gitea"
+	GiteaVersion            = "1.10.3"
 	GiteaConfigMapName      = "gitea-config"
 	GiteaDeploymentName     = "gitea"
 	GiteaIngressName        = "gitea-ingress"
