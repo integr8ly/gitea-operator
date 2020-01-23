@@ -2,7 +2,7 @@ ORG ?= integreatly
 NAMESPACE ?= gitea
 PROJECT=gitea-operator
 SHELL= /bin/bash
-TAG ?= 0.0.4
+TAG ?= 0.0.5
 PKG = github.com/integr8ly/gitea-operator
 COMPILE_OUTPUT = build/_output/bin/gitea-operator
 
