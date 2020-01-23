@@ -3,7 +3,9 @@ package gitea
 import (
 	"context"
 	"fmt"
+	v12 "k8s.io/api/apps/v1"
 	"log"
+	"time"
 
 	"k8s.io/api/apps/v1beta1"
 
@@ -26,6 +28,10 @@ const (
 	PhaseWaitDatabase
 	PhaseInstallGitea
 	PhaseDone
+)
+
+const (
+	RequeueDelay = time.Second * 30
 )
 
 // Add creates a new Gitea Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -99,7 +105,7 @@ func (r *ReconcileGitea) Reconcile(request reconcile.Request) (reconcile.Result,
 	case PhaseInstallGitea:
 		return r.InstallGitea(instanceCopy)
 	case PhaseDone:
-		log.Printf("Gitea installation complete")
+		return r.UpdateGitea(instanceCopy)
 	}
 
 	return reconcile.Result{}, nil
@@ -211,4 +217,36 @@ func (r *ReconcileGitea) CreateResource(cr *integreatlyv1alpha1.Gitea, resourceN
 		return fmt.Errorf("Error creating resource: %s", err)
 	}
 	return nil
+}
+
+// Creates a generic kubernetes resource from a templates
+func (r *ReconcileGitea) UpdateGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.Result, error) {
+	selector := types.NamespacedName{
+		Namespace: cr.Namespace,
+		Name:      GiteaDeploymentName,
+	}
+
+	deployment := v12.Deployment{}
+	err := r.client.Get(context.TODO(), selector, &deployment)
+	if err != nil {
+		return reconcile.Result{RequeueAfter: RequeueDelay}, nil
+	}
+
+	if len(deployment.Spec.Template.Spec.Containers) == 0 {
+		log.Print("no containers in deployment")
+		return reconcile.Result{RequeueAfter: RequeueDelay}, nil
+	}
+
+	expectedImage := fmt.Sprintf("%s:%s", GiteaImage, GiteaVersion)
+	currentImage := deployment.Spec.Template.Spec.Containers[0].Image
+
+	if currentImage != expectedImage {
+		log.Print("Updating gitea to ", expectedImage)
+		deployment.Spec.Template.Spec.Containers[0].Image = expectedImage
+		err = r.client.Update(context.TODO(), &deployment)
+		return reconcile.Result{RequeueAfter: RequeueDelay}, err
+	}
+
+	log.Print("Gitea image is up to date: ", currentImage)
+	return reconcile.Result{RequeueAfter: RequeueDelay}, nil
 }
