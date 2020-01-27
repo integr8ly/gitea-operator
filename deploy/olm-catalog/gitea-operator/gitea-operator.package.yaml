@@ -1,0 +1,5 @@
+channels:
+- currentCSV: gitea-operator.v0.0.5
+  name: alpha
+defaultChannel: alpha
+packageName: gitea-operator

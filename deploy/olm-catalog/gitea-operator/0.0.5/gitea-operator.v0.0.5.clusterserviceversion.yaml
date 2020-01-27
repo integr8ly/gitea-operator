@@ -1,0 +1,121 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    capabilities: Basic Install
+  name: gitea-operator.v0.0.5
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Gitea
+      name: giteas.integreatly.org
+      version: v1alpha1
+      displayName: Gitea
+      description: Provides one managed Gitea instance per CR, deleted upon deletion of the CR.
+  description: An Operator that installs Gitea. Installation is performed by creating a custom resource of kind Gitea. You can uninstall Gitea by removing this resource. The Operator will also watch all Gitea resources and reinstall them if they are deleted.
+  displayName: Gitea Operator
+  install:
+    spec:
+      deployments:
+      - name: gitea-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: gitea-operator
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                name: gitea-operator
+            spec:
+              containers:
+              - command:
+                - gitea-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: OPERATOR_NAME
+                  value: gitea-operator
+                - name: TEMPLATE_PATH
+                  value: /usr/local/bin/templates
+                image: quay.io/integreatly/gitea-operator:master
+                imagePullPolicy: Always
+                name: gitea-operator
+                ports:
+                - containerPort: 60000
+                  name: metrics
+                resources: {}
+              serviceAccountName: gitea-operator
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          - serviceaccounts
+          verbs:
+          - '*'
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - '*'
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - get
+          - create
+        - apiGroups:
+          - integreatly.org
+          resources:
+          - '*'
+          verbs:
+          - '*'
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          - routes/custom-host
+          verbs:
+          - '*'
+        - apiGroups:
+          - extensions
+          resources:
+          - ingresses
+          verbs:
+          - '*'
+        serviceAccountName: gitea-operator
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  maturity: alpha
+  provider: {}
+  version: 0.0.5
