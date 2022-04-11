@@ -1,0 +1,15 @@
+from golang:1.10
+
+# Install docker to be able to push
+WORKDIR /tmp
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz && \
+    tar -zxvf docker-19.03.9.tgz && \
+    cp docker/* /usr/local/bin
+
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    mv kubectl /usr/local/bin/ && \
+    chmod a+x /usr/local/bin/kubectl
+
+
+
