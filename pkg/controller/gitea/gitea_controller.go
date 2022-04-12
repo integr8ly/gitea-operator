@@ -3,15 +3,14 @@ package gitea
 import (
 	"context"
 	"fmt"
-	v12 "k8s.io/api/apps/v1"
 	"log"
 	"time"
 
-	"k8s.io/api/apps/v1beta1"
+	v12 "k8s.io/api/apps/v1"
 
 	integreatlyv1alpha1 "github.com/integr8ly/gitea-operator/pkg/apis/integreatly/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -162,7 +161,7 @@ func (r *ReconcileGitea) UpdatePhase(cr *integreatlyv1alpha1.Gitea, phase int) e
 }
 
 func (r *ReconcileGitea) GetPostgresReady(cr *integreatlyv1alpha1.Gitea) (bool, error) {
-	resource := v1beta1.Deployment{}
+	resource := v12.Deployment{}
 
 	selector := types.NamespacedName{
 		Namespace: cr.Namespace,
@@ -171,6 +170,7 @@ func (r *ReconcileGitea) GetPostgresReady(cr *integreatlyv1alpha1.Gitea) (bool, 
 
 	err := r.client.Get(context.TODO(), selector, &resource)
 	if err != nil {
+		fmt.Errorf("Error: unable to get postgres deployment ->  %s", err)
 		return false, err
 	}
 

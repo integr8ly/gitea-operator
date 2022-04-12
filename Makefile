@@ -1,10 +1,18 @@
-ORG ?= integreatly
+ORG ?= plotly
 NAMESPACE ?= gitea
 PROJECT=gitea-operator
 SHELL= /bin/bash
-TAG ?= 0.0.5
-PKG = github.com/integr8ly/gitea-operator
+TAG ?= 0.0.6
+PKG = github.com/plotly/gitea-operator
 COMPILE_OUTPUT = build/_output/bin/gitea-operator
+
+.PHONY: dockerBuildEnd/build
+dockerBuildEnv/build: 
+	@docker build -f DockerfileBuildEnv -t ${PROJECT}-buildenv:${TAG} .
+
+.PHONY: dockerBuildEnd/run
+dockerBuildEnv/run: 
+	@docker run -it --platform=linux/amd64  -v "${PWD}:/go/src/github.com/integr8ly/gitea-operator" -v "${HOME}/.kube:/root/.kube" -v "/var/run/docker.sock:/var/run/docker.sock" -w /go/src/github.com/integr8ly/gitea-operator ${PROJECT}-buildenv:${TAG} bash
 
 .PHONY: setup/dep
 setup/dep:
@@ -18,7 +26,7 @@ setup/dep:
 .PHONY: setup/travis
 setup/travis:
 	@echo Installing Operator SDK
-	@curl -Lo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v0.1.1/operator-sdk-v0.1.1-x86_64-linux-gnu && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
+	@curl -Lo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v0.1.1/operator-sdk-v0.1.1-x86_64-linux-gnu && chmod +x operator-sdk && mv operator-sdk /usr/local/bin/
 
 .PHONY: code/run
 code/run:
@@ -64,7 +72,7 @@ test/e2e:
 .PHONY: cluster/prepare
 cluster/prepare:
 	-kubectl apply -f deploy/crds/crd.yaml
-	-oc new-project $(NAMESPACE)
+	-kubectl create namespace $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/role_binding.yaml -n $(NAMESPACE)
 	-kubectl create --insecure-skip-tls-verify -f deploy/service_account.yaml -n $(NAMESPACE)
