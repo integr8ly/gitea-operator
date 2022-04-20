@@ -3,6 +3,7 @@ apiVersion: apps/v1
 metadata:
   labels:
     app: {{ .ApplicationName }}
+    kots.io/backup: velero
   name: {{ .GiteaDeploymentName }}
   namespace: {{ .ApplicationNamespace }}
 spec:
@@ -11,31 +12,68 @@ spec:
     matchLabels:
       app: {{ .ApplicationName }}
       deployment: {{ .ApplicationName }}
+      app.kubernetes.io/instance: {{ .ApplicationName }}
+      app.kubernetes.io/name: {{ .ApplicationName }}
+      kots.io/backup: velero
   template:
     metadata:
       creationTimestamp: null
       labels:
         app: {{ .ApplicationName }}
         deployment: {{ .GiteaDeploymentName }}
+        app.kubernetes.io/instance: {{ .ApplicationName }}
+        app.kubernetes.io/name: {{ .ApplicationName }}
+        kots.io/backup: velero
     spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/instance
+                operator: In
+                values:
+                - {{ .ApplicationName }}
+            topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .GiteaServiceAccountName }}
+#       // ICI ICI ICI 
       containers:
       - image: "{{ .GiteaImage }}:{{ .GiteaVersion }}"
         imagePullPolicy: Always
         name: {{ .ApplicationName }}
         ports:
+        - containerPort: 2222
+          name: ssh
+          protocol: TCP
         - containerPort: 3000
+          name: http
           protocol: TCP
         resources: {}
         env:
-          - name: USER
-            value: {{ .ApplicationName }}
+# TODO: need set those env as Variables !!
+          - name: SSH_LISTEN_PORT
+            value: "2222"
+          - name: SSH_PORT
+            value: "22"
+          - name: GITEA_APP_INI
+            value: /data/gitea/conf/app.ini
+          - name: GITEA_CUSTOM
+            value: /data/gitea
+          - name: GITEA_WORK_DIR
+            value: /data
+          - name: GITEA_TEMP
+            value: /tmp/gitea
+          - name: TMPDIR
+            value: /tmp/gitea
         terminationMessagePath: /dev/termination-log
         volumeMounts:
         - name: {{ .GiteaReposPvcName }}
-          mountPath: /gitea-repositories
-        - name: {{ .GiteaConfigMapName }}
-          mountPath: /home/gitea/conf
+          mountPath: /data
+        - mountPath: /tmp
+          name: temp
+# From original template
+#        - name: {{ .GiteaConfigMapName }}
+#          mountPath: /home/gitea/conf
         readinessProbe:
             httpGet:
               path: /
@@ -43,7 +81,7 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 5
             timeoutSeconds: 1
-            periodSeconds: 20
+            periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
         livenessProbe:
@@ -51,11 +89,11 @@ spec:
               path: /
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 30
+            initialDelaySeconds: 200
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 10
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       securityContext: {}
@@ -64,12 +102,94 @@ spec:
       - name: {{ .GiteaReposPvcName }}
         persistentVolumeClaim:
           claimName: {{ .GiteaReposPvcName }}
-      - name: {{ .GiteaConfigMapName }}
-        configMap:
-          name: {{ .GiteaConfigMapName }}
-          items:
-            - key: app.ini
-              path: app.ini
+# start
+      initContainers:
+      - command:
+        - /usr/sbin/init_directory_structure.sh
+        env:
+        - name: GITEA_APP_INI
+          value: /data/gitea/conf/app.ini
+        - name: GITEA_CUSTOM
+          value: /data/gitea
+        - name: GITEA_WORK_DIR
+          value: /data
+        - name: GITEA_TEMP
+          value: /tmp/gitea
+        image: "{{ .GiteaImage }}:{{ .GiteaVersion }}"
+        imagePullPolicy: IfNotPresent
+        name: init-directories
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/sbin
+          name: init
+        - mountPath: /tmp
+          name: temp
+        - mountPath: /etc/gitea/conf
+          name: config
+# TODO change config for a variable
+        - mountPath: /data
+          name: {{ .GiteaReposPvcName }}
+      - command:
+        - /usr/sbin/configure_gitea.sh
+        env:
+        - name: GITEA_APP_INI
+          value: /data/gitea/conf/app.ini
+        - name: GITEA_CUSTOM
+          value: /data/gitea
+        - name: GITEA_WORK_DIR
+          value: /data
+        - name: GITEA_TEMP
+          value: /tmp/gitea
+        - name: GITEA_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: gitea-admin-secret
+        - name: GITEA_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: gitea-admin-secret
+# TODO create this secret too 
+        image: "{{ .GiteaImage }}:{{ .GiteaVersion }}"
+        imagePullPolicy: IfNotPresent
+        name: configure-gitea
+        resources: {}
+        securityContext:
+          runAsUser: 1000
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/sbin
+          name: init
+        - mountPath: /tmp
+          name: temp
+        - mountPath: /data
+          name: {{ .GiteaReposPvcName }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: init
+        secret:
+          defaultMode: 511
+          secretName: gitea-init
+# TODO need create those secret
+      - name: config
+        secret:
+          defaultMode: 420
+          secretName: gitea
+      - emptyDir: {}
+        name: temp
+      - name: {{ .GiteaReposPvcName }}
+        persistentVolumeClaim:
+          claimName: {{ .GiteaReposPvcName }}
+
+# end 
   test: false
   triggers:
   - type: ConfigChange

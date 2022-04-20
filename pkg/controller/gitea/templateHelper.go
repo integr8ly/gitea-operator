@@ -14,15 +14,15 @@ import (
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 const (
-	GiteaImage              = "quay.io/integreatly/gitea"
-	GiteaVersion            = "1.10.3"
+	GiteaImage              = "quay.io/plotly/gitea-gitea"
+	GiteaVersion            = "1.15.5-rootless-rootless"
 	GiteaConfigMapName      = "gitea-config"
 	GiteaDeploymentName     = "gitea"
 	GiteaIngressName        = "gitea-ingress"
 	GiteaPgDeploymentName   = "postgres"
 	GiteaPgPvcName          = "gitea-postgres-pvc"
 	GiteaPgServiceName      = "gitea-postgres-service"
-	GiteaReposPvcName       = "gitea-repos-pvc"
+	GiteaReposPvcName       = "gitea-repos"
 	GiteaServiceAccountName = "gitea-service-account"
 	GiteaServiceName        = "gitea-service"
 )
@@ -102,8 +102,9 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		GiteaSecretKey:          generateToken(10),
 		GiteaImage:              GiteaImage,
 		GiteaVersion:            GiteaVersion,
-		GiteaVolumeCapacity:     "1Gi",
-		DbVolumeCapacity:        "1Gi",
+		// TODO change those value for production
+		GiteaVolumeCapacity: "1Gi",
+		DbVolumeCapacity:    "1Gi",
 	}
 
 	templatePath := os.Getenv("TEMPLATE_PATH")
