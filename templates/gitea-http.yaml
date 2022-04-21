@@ -1,0 +1,27 @@
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    description: The Gitea server's http port
+    service.alpha.openshift.io/dependencies: '[{"name":"{{ .GiteaPgServiceName }}","namespace":"","kind":"Service"}]'
+  labels:
+    app: {{ .ApplicationName }}
+  name: {{ .GiteaServiceName }}
+  namespace: {{ .ApplicationNamespace }}
+spec:
+  ports:
+  - name: 3000-tcp
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  clusterIP: None
+  clusterIPs:
+  - None
+  externalName: {{ .Hostname }}
+  selector:
+    app: {{ .ApplicationName }}
+    deployment: {{ .GiteaDeploymentName }}
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

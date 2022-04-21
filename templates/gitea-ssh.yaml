@@ -6,14 +6,18 @@ metadata:
     service.alpha.openshift.io/dependencies: '[{"name":"{{ .GiteaPgServiceName }}","namespace":"","kind":"Service"}]'
   labels:
     app: {{ .ApplicationName }}
-  name: {{ .GiteaServiceName }}
+  name: {{ .GiteaServiceSshName }}
   namespace: {{ .ApplicationNamespace }}
 spec:
   ports:
-  - name: 3000-tcp
-    port: 3000
+  - name: 2222-tcp
+    port: 22
     protocol: TCP
-    targetPort: 3000
+    targetPort: 2222
+  clusterIP: None
+  clusterIPs:
+  - None
+  externalName: {{ .Hostname }}
   selector:
     app: {{ .ApplicationName }}
     deployment: {{ .GiteaDeploymentName }}

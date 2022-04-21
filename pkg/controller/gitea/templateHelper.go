@@ -24,7 +24,8 @@ const (
 	GiteaPgServiceName      = "gitea-postgresql"
 	GiteaReposPvcName       = "gitea-repos"
 	GiteaServiceAccountName = "gitea-service-account"
-	GiteaServiceName        = "gitea-service"
+	GiteaServiceName        = "gitea-http"
+	GiteaServiceSshName     = "gitea-ssh"          // added by TB
 	GiteaInitSecretName     = "gitea-init"         // added by TB
 	GiteaAdminSecretName    = "gitea-admin-secret" // added by TB
 
@@ -53,6 +54,7 @@ type GiteaParameters struct {
 	GiteaReposPvcName       string
 	GiteaServiceAccountName string
 	GiteaServiceName        string
+	GiteaServiceSshName     string
 	// added by TB
 	GiteaInitSecretName  string
 	GiteaAdminSecretName string
@@ -96,6 +98,7 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		GiteaReposPvcName:       GiteaReposPvcName,
 		GiteaServiceAccountName: GiteaServiceAccountName,
 		GiteaServiceName:        GiteaServiceName,
+		GiteaServiceSshName:     GiteaServiceSshName,
 		GiteaInitSecretName:     GiteaInitSecretName,  // added by TB
 		GiteaAdminSecretName:    GiteaAdminSecretName, // added by TB
 		ApplicationNamespace:    cr.Namespace,

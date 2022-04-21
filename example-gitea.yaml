@@ -11,7 +11,7 @@ metadata:
   resourceVersion: "7989"
   uid: 7eff070e-f157-4644-bc91-a715b6b36f6a
 spec:
-  hostname: gitea.apps.127.0.0.1.nip.io
+  hostname: gitea.foo.com
 status:
   phase: 0
   version: 1.15.5-rootless-rootless

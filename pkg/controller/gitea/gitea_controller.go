@@ -143,7 +143,7 @@ func (r *ReconcileGitea) InstallGitea(cr *integreatlyv1alpha1.Gitea) (reconcile.
 	log.Printf("Phase: Install Gitea")
 
 	// Try create all gitea resources
-	for _, resourceName := range []string{GiteaServiceName, GiteaReposPvcName, GiteaInitSecretName, GiteaAdminSecretName, GiteaConfigName, GiteaDeploymentName, GiteaIngressName} {
+	for _, resourceName := range []string{GiteaServiceName, GiteaServiceSshName, GiteaReposPvcName, GiteaInitSecretName, GiteaAdminSecretName, GiteaConfigName, GiteaDeploymentName, GiteaIngressName} {
 		if err := r.CreateResource(cr, resourceName); err != nil {
 			log.Printf("Error in InstallGitea resourceName=%s : err=%s", resourceName, err)
 			// Requeue so it can be attempted again
