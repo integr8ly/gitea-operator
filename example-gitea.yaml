@@ -1,0 +1,17 @@
+apiVersion: integreatly.org/v1alpha1
+kind: Gitea
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"integreatly.org/v1alpha1","kind":"Gitea","metadata":{"annotations":{},"name":"example-gitea","namespace":"gitea"},"spec":{"hostname":"gitea.apps.127.0.0.1.nip.io"}}
+  creationTimestamp: "2022-04-20T01:47:24Z"
+  generation: 24
+  name: example-gitea
+  namespace: gitea
+  resourceVersion: "7989"
+  uid: 7eff070e-f157-4644-bc91-a715b6b36f6a
+spec:
+  hostname: gitea.apps.127.0.0.1.nip.io
+status:
+  phase: 0
+  version: 1.15.5-rootless-rootless

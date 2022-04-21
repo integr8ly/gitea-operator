@@ -1,74 +1,53 @@
-kind: ConfigMap
+kind: Secret
 apiVersion: v1
 metadata:
-  name: {{ .GiteaConfigMapName }}
+  name: {{ .GiteaConfigName }}
   namespace: {{ .ApplicationNamespace }}
-data:
+type: Opaque
+# TODO enable back the memcach or at least re-evaluate it
+stringData:
   app.ini: |
-    APP_NAME = Gitea: Git with a cup of tea
-    RUN_USER = gitea
-    RUN_MODE = prod
+    APP_NAME = Dash Enterprise Git
 
-    [security]
-    INTERNAL_TOKEN = {{ .GiteaInternalToken }}
-    INSTALL_LOCK   = true
-    SECRET_KEY     = {{ .GiteaSecretKey }}
+    [cache]
+    ADAPTER = memcache
+    ENABLED = false
+    HOST = gitea-memcached.{{ .ApplicationNamespace }}.svc.cluster.local:11211
 
     [database]
-    DB_TYPE  = postgres
-    HOST     = {{ .GiteaPgServiceName }}:5432
-    NAME     = {{ .DatabaseName }}
-    USER     = {{ .DatabaseUser }}
-    PASSWD   = {{ .DatabasePassword }}
-    SSL_MODE = disable
-    PATH     = data/gitea.db
+    DB_TYPE = postgres
+    HOST    = {{ .GiteaPgServiceName }}.{{ .ApplicationNamespace }}.svc.cluster.local:5432
+    NAME    = {{ .DatabaseName }}
+    USER    = {{ .DatabaseUser }}
+    PASSWD  = {{ .DatabasePassword }}
 
-    [repository]
-    ROOT = /gitea-repositories
-
-    [server]
-    SSH_DOMAIN       = {{ .Hostname }}
-    DOMAIN           = {{ .Hostname }}
-    HTTP_PORT        = 3000
-    SSH_PORT         = 2022
-    ROOT_URL         = http://{{ .Hostname }}
-    DISABLE_SSH      = false
-    START_SSH_SERVER = true
-    LFS_START_SERVER = false
-    OFFLINE_MODE     = false
-
-    [mailer]
+    [metrics]
     ENABLED = false
 
+    [migrations]
+    ALLOW_LOCAL_NETWORKS = true
+
+    [repository]
+    ROOT = /data/git/gitea-repositories
+
+    [repository.upload]
+    FILE_MAX_SIZE = 150
+
+    [security]
+    DISABLE_GIT_HOOKS = false
+    INSTALL_LOCK = true
+
+    [server]
+    APP_DATA_PATH = /data
+    DOMAIN = {{ .Hostname }}
+    ENABLE_PPROF = false
+    HTTP_PORT = 3000
+    PROTOCOL = http
+    ROOT_URL = http://{{ .Hostname }}
+    SSH_DOMAIN = {{ .Hostname }}
+    SSH_LISTEN_PORT = 2222
+    SSH_PORT = 22
+    START_SSH_SERVER = true
+
     [service]
-    REGISTER_EMAIL_CONFIRM            = false
-    ENABLE_NOTIFY_MAIL                = false
-    DISABLE_REGISTRATION              = false
-    ENABLE_CAPTCHA                    = false
-    REQUIRE_SIGNIN_VIEW               = false
-    DEFAULT_KEEP_EMAIL_PRIVATE        = false
-    DEFAULT_ALLOW_CREATE_ORGANIZATION = true
-    DEFAULT_ENABLE_TIMETRACKING       = true
-    NO_REPLY_ADDRESS                  = noreply.example.org
-
-    [picture]
-    DISABLE_GRAVATAR        = false
-    ENABLE_FEDERATED_AVATAR = true
-
-    [openid]
-    ENABLE_OPENID_SIGNIN = false
-    ENABLE_OPENID_SIGNUP = false
-
-    [session]
-    PROVIDER = file
-
-    [log]
-    MODE      = file
-    LEVEL     = Info
-    ROOT_PATH = /home/gitea/log
-
-    [markup.asciidoc]
-    ENABLED = true
-    FILE_EXTENSIONS = .adoc,.asciidoc
-    RENDER_COMMAND = "asciidoc --out-file=- -"
-    IS_INPUT_FILE = false
+    DISABLE_REGISTRATION = true

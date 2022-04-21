@@ -71,9 +71,6 @@ spec:
           mountPath: /data
         - mountPath: /tmp
           name: temp
-# From original template
-#        - name: {{ .GiteaConfigMapName }}
-#          mountPath: /home/gitea/conf
         readinessProbe:
             httpGet:
               path: /
@@ -182,7 +179,7 @@ spec:
       - name: config
         secret:
           defaultMode: 420
-          secretName: gitea
+          secretName: {{ .GiteaConfigName }}
       - emptyDir: {}
         name: temp
       - name: {{ .GiteaReposPvcName }}

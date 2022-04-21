@@ -16,15 +16,18 @@ var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01
 const (
 	GiteaImage              = "quay.io/plotly/gitea-gitea"
 	GiteaVersion            = "1.15.5-rootless-rootless"
-	GiteaConfigMapName      = "gitea-config"
+	GiteaConfigName         = "gitea-config"
 	GiteaDeploymentName     = "gitea"
 	GiteaIngressName        = "gitea-ingress"
 	GiteaPgDeploymentName   = "postgres"
 	GiteaPgPvcName          = "gitea-postgres-pvc"
-	GiteaPgServiceName      = "gitea-postgres-service"
+	GiteaPgServiceName      = "gitea-postgresql"
 	GiteaReposPvcName       = "gitea-repos"
 	GiteaServiceAccountName = "gitea-service-account"
 	GiteaServiceName        = "gitea-service"
+	GiteaInitSecretName     = "gitea-init"         // added by TB
+	GiteaAdminSecretName    = "gitea-admin-secret" // added by TB
+
 )
 
 func generateToken(n int) string {
@@ -37,10 +40,11 @@ func generateToken(n int) string {
 
 var DatabasePassword = generateToken(10)
 var DatabaseAdminPassword = generateToken(10)
+var GiteaAdminPassword = generateToken(10)
 
 type GiteaParameters struct {
 	// Resource names
-	GiteaConfigMapName      string
+	GiteaConfigName         string
 	GiteaDeploymentName     string
 	GiteaIngressName        string
 	GiteaPgDeploymentName   string
@@ -49,6 +53,10 @@ type GiteaParameters struct {
 	GiteaReposPvcName       string
 	GiteaServiceAccountName string
 	GiteaServiceName        string
+	// added by TB
+	GiteaInitSecretName  string
+	GiteaAdminSecretName string
+	GiteaAdminPassword   string
 
 	// Resource properties
 	ApplicationNamespace   string
@@ -79,7 +87,7 @@ type GiteaTemplateHelper struct {
 // by the user in the custom resource
 func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 	param := GiteaParameters{
-		GiteaConfigMapName:      GiteaConfigMapName,
+		GiteaConfigName:         GiteaConfigName,
 		GiteaDeploymentName:     GiteaDeploymentName,
 		GiteaIngressName:        GiteaIngressName,
 		GiteaPgDeploymentName:   GiteaPgDeploymentName,
@@ -88,12 +96,15 @@ func newTemplateHelper(cr *integreatlyv1alpha1.Gitea) *GiteaTemplateHelper {
 		GiteaReposPvcName:       GiteaReposPvcName,
 		GiteaServiceAccountName: GiteaServiceAccountName,
 		GiteaServiceName:        GiteaServiceName,
+		GiteaInitSecretName:     GiteaInitSecretName,  // added by TB
+		GiteaAdminSecretName:    GiteaAdminSecretName, // added by TB
 		ApplicationNamespace:    cr.Namespace,
 		ApplicationName:         "gitea",
 		Hostname:                cr.Spec.Hostname,
 		DatabaseUser:            "gitea",
 		DatabasePassword:        DatabasePassword,
 		DatabaseAdminPassword:   DatabaseAdminPassword,
+		GiteaAdminPassword:      GiteaAdminPassword,
 		DatabaseName:            "gitea",
 		DatabaseMaxConnections:  "100",
 		DatabaseSharedBuffers:   "12MB",
