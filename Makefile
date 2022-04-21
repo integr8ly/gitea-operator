@@ -2,7 +2,7 @@ ORG ?= plotly
 NAMESPACE ?= gitea
 PROJECT=gitea-operator
 SHELL= /bin/bash
-TAG ?= 0.0.6
+TAG ?= 0.0.6.1
 PKG = github.com/plotly/gitea-operator
 COMPILE_OUTPUT = build/_output/bin/gitea-operator
 
