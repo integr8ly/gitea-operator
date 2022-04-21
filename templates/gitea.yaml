@@ -26,6 +26,7 @@ spec:
         kots.io/backup: velero
     spec:
       affinity:
+# TODO   Why we need this  pod affinity ?!?!
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
@@ -36,7 +37,6 @@ spec:
                 - {{ .ApplicationName }}
             topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .GiteaServiceAccountName }}
-#       // ICI ICI ICI 
       containers:
       - image: "{{ .GiteaImage }}:{{ .GiteaVersion }}"
         imagePullPolicy: Always
